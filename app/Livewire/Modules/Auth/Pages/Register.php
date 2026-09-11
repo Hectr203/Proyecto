@@ -27,12 +27,17 @@ class Register extends Component
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+        $validated['role'] = 'cliente';
+        $validated['verification_code'] = sprintf('%06d', mt_rand(100000, 999999));
+        $validated['verification_code_expires_at'] = now()->addMinutes(60);
 
-        event(new Registered($user = User::create($validated)));
+        $user = User::create($validated);
+
+        \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\Auth\VerifyEmailOtpMail($user->name, $user->verification_code));
 
         Auth::login($user);
 
-        $this->redirect(route('dashboard', absolute: false), navigate: true);
+        $this->redirect(route('verification.notice', absolute: false), navigate: true);
     }
 
     public function render()

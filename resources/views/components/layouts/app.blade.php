@@ -52,5 +52,28 @@
         </div>
         <x-organisms.footer />
         <livewire:modules.client.cart.cart />
+        
+        <script>
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('toast', (event) => {
+                    console.log('Toast Event Triggered!', event);
+                    const data = Array.isArray(event) ? event[0] : event;
+                    
+                    if (!window.toast) {
+                        console.error('Vanilla Sonner toast is not loaded on window.');
+                        alert(data.message);
+                        return;
+                    }
+
+                    if(data.type === 'success') {
+                        window.toast.success(data.message);
+                    } else if(data.type === 'error') {
+                        window.toast.error(data.message);
+                    } else {
+                        window.toast.info(data.message);
+                    }
+                });
+            });
+        </script>
     </body>
 </html>

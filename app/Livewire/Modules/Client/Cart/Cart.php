@@ -17,9 +17,14 @@ class Cart extends Component
     }
 
     #[On('cart-updated')]
-    public function openCart()
+    public function refreshCart()
     {
         $this->cart = session()->get('cart', []);
+    }
+
+    #[On('open-cart')]
+    public function openCart()
+    {
         $this->isOpen = true;
     }
 

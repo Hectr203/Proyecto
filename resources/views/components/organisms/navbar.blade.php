@@ -53,32 +53,19 @@ new class extends Component
 
         <!-- Right Side Icons & Auth -->
         <div class="flex items-center gap-space-md">
-            <!-- Search -->
-            <div class="hidden md:flex items-center gap-space-sm bg-surface-container-low px-space-md py-space-xs rounded-full shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)]">
+            <!-- Search Bar -->
+            <form action="{{ route('dashboard') }}" method="GET" class="hidden md:flex items-center gap-space-sm bg-surface-container-low px-space-md py-space-xs rounded-full shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)]">
                 <span class="material-symbols-outlined text-on-surface-variant text-[18px]">search</span>
-                <input class="bg-transparent text-on-surface placeholder:text-on-surface-variant font-body-sm text-body-sm focus:outline-none w-44 lg:w-56" placeholder="Search bio-actives..." type="text"/>
-                <kbd class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-high px-space-xs py-0.5 rounded border border-surface-container-highest shadow-sm text-[10px]">⌘K</kbd>
-            </div>
+                <input name="search" class="bg-transparent text-on-surface placeholder:text-on-surface-variant font-body-sm text-body-sm focus:outline-none w-44 lg:w-56 border-0 focus:ring-0" placeholder="Buscar productos..." type="text" value="{{ request('search') }}">
+                <button type="submit" class="hidden"></button>
+            </form>
 
             <div class="w-px h-6 bg-surface-container mx-1 hidden md:block"></div>
 
             <!-- Icons -->
             <div class="flex items-center gap-space-sm">
-                <!-- Favorites Icon -->
-                <button aria-label="Favorites" class="hidden sm:flex relative p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low rounded-full transition-colors items-center justify-center">
-                    <span class="material-symbols-outlined text-[20px]">favorite_border</span>
-                </button>
-
-                <!-- Cart Icon -->
-                <button aria-label="Shopping Bag" x-data @click="$dispatch('cart-updated')" class="relative p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center">
-                    <span class="material-symbols-outlined text-[20px]">shopping_bag</span>
-                    @if(session()->has('cart') && count(session()->get('cart')) > 0)
-                        <span class="absolute top-0 right-0 w-4 h-4 bg-primary text-on-primary font-label-sm text-[10px] rounded-full flex items-center justify-center font-bold ring-2 ring-white">{{ count(session()->get('cart')) }}</span>
-                    @else
-                        <!-- Badge estático para la demo visual si no hay items -->
-                        <span class="absolute top-0 right-0 w-4 h-4 bg-primary text-on-primary font-label-sm text-[10px] rounded-full flex items-center justify-center font-bold ring-2 ring-white">2</span>
-                    @endif
-                </button>
+                
+                <livewire:modules.client.cart.cart-widget />
 
                 @auth
                     <!-- Settings Dropdown Desktop -->
@@ -110,12 +97,9 @@ new class extends Component
                     </div>
                 @else
                     <div class="hidden sm:flex sm:items-center gap-space-sm pl-space-xs">
-                        <button class="relative group p-1 rounded-full hover:bg-surface-container-low transition-colors focus:outline-none">
-                            <div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant font-label-sm overflow-hidden ring-1 ring-surface-container-high">
-                                <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Demo Avatar" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
-                            </div>
-                            <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#10b981] rounded-full ring-2 ring-white"></div>
-                        </button>
+                        <a href="{{ route('login') }}" wire:navigate class="relative group p-1.5 rounded-full hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none flex items-center justify-center" aria-label="Login">
+                            <span class="material-symbols-outlined text-[24px]">account_circle</span>
+                        </a>
                     </div>
                 @endauth
                 

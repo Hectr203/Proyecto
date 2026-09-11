@@ -32,6 +32,11 @@ class Product extends Model
         if (filter_var($this->imagen, FILTER_VALIDATE_URL)) {
             return $this->imagen;
         }
+
+        // Si la imagen todavía está en el directorio temporal local (el Job aún no termina)
+        if (str_starts_with($this->imagen, 'temp_products/')) {
+            return '/storage/' . $this->imagen;
+        }
         
         try {
             return \Illuminate\Support\Facades\Storage::disk('azure')->temporaryUrl(
@@ -40,6 +45,23 @@ class Product extends Model
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    protected static function booted()
+    {
+        static::saved(function ($product) {
+            try {
+                $service = app(\App\Services\ElasticsearchService::class);
+                $service->indexProduct($product);
+            } catch (\Exception $e) {}
+        });
+
+        static::deleted(function ($product) {
+            try {
+                $service = app(\App\Services\ElasticsearchService::class);
+                $service->deleteProduct($product);
+            } catch (\Exception $e) {}
+        });
     }
 
     public function category()

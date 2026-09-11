@@ -11,6 +11,8 @@ use Livewire\Component;
 class Store extends Component
 {
     public $category_id = '';
+    
+    #[\Livewire\Attributes\Url]
     public $search = '';
 
     public function addToCart($productId)
@@ -41,6 +43,10 @@ class Store extends Component
 
         session()->put('cart', $cart);
         $this->dispatch('cart-updated');
+        $this->dispatch('toast', [
+            'type' => 'success', 
+            'message' => 'Se ha añadido "' . $product->nombre . '" al carrito.'
+        ]);
     }
 
     public function render()
@@ -52,13 +58,28 @@ class Store extends Component
         }
 
         if ($this->search) {
-            $query->where(function($q) {
-                $q->where('nombre', 'like', '%' . $this->search . '%')
-                  ->orWhere('descripcion_corta', 'like', '%' . $this->search . '%');
-            });
+            $elasticsearchService = app(\App\Services\ElasticsearchService::class);
+            $productIds = $elasticsearchService->searchFuzzy($this->search);
+            
+            if ($productIds !== null) {
+                // If Elasticsearch returned results (or empty array)
+                $query->whereIn('id', $productIds);
+                if (count($productIds) > 0) {
+                    // Maintain the relevance order from Elasticsearch
+                    $query->orderByRaw('FIELD(id, ' . implode(',', $productIds) . ')');
+                }
+            } else {
+                // Fallback if Elasticsearch fails
+                $query->where(function($q) {
+                    $q->where('nombre', 'like', '%' . $this->search . '%')
+                      ->orWhere('descripcion_corta', 'like', '%' . $this->search . '%');
+                });
+            }
+        } else {
+            $query->latest();
         }
 
-        $products = $query->latest()->paginate(12);
+        $products = $query->paginate(12);
         $categories = Category::orderBy('name')->get();
 
         return view('modules.Client.Catalog.pages.store', [

@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin User',
             'email' => 'admin@test.com',
             'password' => bcrypt('password'),
-            'role' => 'admin' // Added role admin just in case based on previous auth rules
+            'role' => 'super_admin' // Updated role to super_admin for full access
         ]);
 
         // Semillas de productos de cosméticos/suplementos

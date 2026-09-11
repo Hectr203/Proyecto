@@ -72,6 +72,13 @@ class CheckoutSuccess extends Component
                 }
 
                 DB::commit();
+                
+                // Cargar relaciones para el correo
+                $order->load('detalles.producto');
+                
+                // Enviar correo de confirmación de compra
+                \Illuminate\Support\Facades\Mail::to($order->correo)->send(new \App\Mail\Shop\OrderConfirmedMail($order));
+
                 session()->forget('cart');
                 session()->forget('checkout_email');
             }

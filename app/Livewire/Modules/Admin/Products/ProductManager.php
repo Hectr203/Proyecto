@@ -14,6 +14,8 @@ class ProductManager extends Component
     use WithPagination, WithFileUploads;
 
     public $search = '';
+    public $filterActivo = ''; // '' para todos, '1' para activo, '0' para inactivo
+    public $viewMode = 'table'; // 'table' or 'grid'
     
     // Propiedades del formulario
     public $productId;
@@ -33,7 +35,7 @@ class ProductManager extends Component
     {
         return [
             'sku' => 'required|unique:products,sku,' . $this->productId,
-            'nombre' => 'required|regex:/^[a-zA-Z0-9\s]+$/', // Validamos letras, números y espacios, sin caracteres especiales ni acentos
+            'nombre' => 'required|string|max:255',
             'descripcion_corta' => 'required|string|max:255',
             'precio_usd' => 'required|numeric|gt:0',
             'precio_mxn' => 'required|numeric|gt:0',
@@ -47,7 +49,6 @@ class ProductManager extends Component
     public function messages()
     {
         return [
-            'nombre.regex' => 'El nombre no debe contener acentos ni caracteres especiales.',
             'precio_usd.gt' => 'El precio USD debe ser mayor a 0.',
             'precio_mxn.gt' => 'El precio MXN debe ser mayor a 0.',
             'sku.unique' => 'Este SKU ya se encuentra registrado.',
@@ -99,19 +100,18 @@ class ProductManager extends Component
         ];
 
         if ($this->imagen && !is_string($this->imagen)) {
-            // Aseguramos que el contenedor exista antes de guardar
-            try {
-                $proxy = \MicrosoftAzure\Storage\Blob\BlobRestProxy::createBlobService(config('filesystems.disks.azure.connection_string'));
-                $proxy->createContainer(config('filesystems.disks.azure.container'));
-            } catch (\Exception $e) {
-                // Si el contenedor ya existe (o hay otro error menor), ignoramos la excepción
-            }
-
-            $path = $this->imagen->store('/', 'azure');
-            $data['imagen'] = $path;
+            // Guardamos localmente para que sea instantáneo (0.1s)
+            $localPath = $this->imagen->store('temp_products', 'public');
+            $data['imagen'] = $localPath;
+            
+            // Guardamos el producto con la ruta temporal
+            $product = Product::updateOrCreate(['id' => $this->productId], $data);
+            
+            // Despachamos el Job para subirlo a Azure en segundo plano
+            \App\Jobs\UploadProductImageToAzure::dispatch($product->id, $localPath);
+        } else {
+            Product::updateOrCreate(['id' => $this->productId], $data);
         }
-
-        Product::updateOrCreate(['id' => $this->productId], $data);
 
         $this->showModal = false;
         $this->resetInputFields();
@@ -146,9 +146,20 @@ class ProductManager extends Component
 
     public function render()
     {
-        $products = Product::where('sku', 'like', '%' . $this->search . '%')
-            ->orWhere('nombre', 'like', '%' . $this->search . '%')
-            ->paginate(10);
+        $query = Product::query();
+
+        if ($this->search) {
+            $query->where(function($q) {
+                $q->where('sku', 'like', '%' . $this->search . '%')
+                  ->orWhere('nombre', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        if ($this->filterActivo !== '') {
+            $query->where('activo', $this->filterActivo);
+        }
+
+        $products = $query->paginate(50);
 
         return view('modules.Admin.Products.pages.index', [
             'products' => $products,

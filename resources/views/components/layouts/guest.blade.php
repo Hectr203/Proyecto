@@ -19,23 +19,43 @@
             @layer base { 
                 html, body { margin: 0; padding: 0; } 
                 body { overscroll-behavior: none; } 
+                main > :first-child { margin-top: 0 !important; }
+                main > :last-child { margin-bottom: 0 !important; }
             } 
         </style>
     </head>
-    <body class="bg-surface font-body-md text-on-surface antialiased selection:bg-secondary-container selection:text-on-secondary-container">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-fixed via-surface to-secondary-fixed">
-            <div>
-                <a href="/" wire:navigate class="flex items-center gap-2 group">
-                    <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center transform group-hover:rotate-12 transition-transform shadow-lg shadow-indigo-200">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+    <body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen antialiased selection:bg-secondary-container selection:text-on-secondary-container">
+        
+        <header class="w-full">
+            <div class="h-20 max-w-[1280px] mx-auto px-margin-mobile md:px-margin flex items-center justify-between">
+                <a href="/" wire:navigate class="flex items-center gap-space-sm group">
+                    <div class="flex items-center justify-center w-8 h-8 bg-on-surface rounded-lg shadow-sm group-hover:scale-105 transition-transform">
+                        <div class="w-3.5 h-3.5 bg-white rounded-full flex items-center justify-center">
+                            <div class="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                        </div>
                     </div>
-                    <span class="text-3xl font-black tracking-tight text-on-surface uppercase font-headline-lg">Lumen<span class="text-primary">Lab</span></span>
+                    <span class="font-headline-sm text-headline-sm tracking-tight text-on-surface uppercase">Lumen<span class="font-normal text-on-surface">Lab</span></span>
+                </a>
+                <a href="/" wire:navigate class="inline-flex items-center gap-space-xs font-label-md text-label-md text-on-surface hover:text-on-surface-variant transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    <span>Volver a la tienda</span>
                 </a>
             </div>
+        </header>
 
-            <div class="w-full sm:max-w-md mt-10 px-8 py-10 bg-surface-container-lowest shadow-[0_16px_36px_-6px_rgba(29,29,31,0.08)] sm:rounded-3xl border border-surface-container">
-                {{ $slot }}
+        <main class="flex-1 flex flex-col items-center justify-center w-full px-margin-mobile md:px-margin py-space-xl">
+            {{ $slot }}
+        </main>
+
+        <footer class="w-full mt-auto mb-8">
+            <div class="max-w-[1280px] mx-auto px-margin-mobile md:px-margin flex flex-col md:flex-row items-center justify-between gap-space-md text-center md:text-left">
+                <p class="font-body-sm text-body-sm text-on-surface-variant">© {{ date('Y') }} Lumen Lab. Cuidado y precisión biotecnológica. Todos los derechos reservados.</p>
+                <div class="flex items-center flex-wrap justify-center gap-space-lg font-body-sm text-body-sm text-on-surface-variant">
+                    <a href="#" class="hover:text-on-surface transition-colors">Privacidad</a>
+                    <a href="#" class="hover:text-on-surface transition-colors">Términos y condiciones</a>
+                    <a href="#" class="hover:text-on-surface transition-colors">Atención al cliente</a>
+                </div>
             </div>
-        </div>
+        </footer>
     </body>
 </html>
